@@ -25,7 +25,8 @@
 #include <thread>
 #include <mutex>
 #include <vector>
-
+//Added by TJ
+#include <semaphore.h>
 
 using namespace std;
 
@@ -47,6 +48,8 @@ using namespace std;
  * Leave it 0 to allow bidirectional travel
  */
 #define UNIDIRECTIONAL       0
+
+
 
 /*
  * Set this to the number of seconds you want the lizard world to
@@ -93,7 +96,10 @@ using namespace std;
 
 /*
  * Declare global variables here
+ * Added By Tj
  */
+sem_t dWaySemaphore;
+pthread_mutex_t countMutex;
 
 
 /**************************************************/
@@ -156,10 +162,14 @@ int Cat::getId()
  * Launches a cat thread.
  * 
  * Status: Incomplete - Make changes to this code.
+ * Status Tj: Added line 167 may not be correct at this moment.
  */
  void Cat::run() 
  {
-	 // launch the thread to simulate the cat's behavior	 
+	 // launch the thread to simulate the cat's behavior
+     _catThread = new thread (catThread, this); // Added by TJ
+     
+     
 	 
  }
  
@@ -171,6 +181,10 @@ int Cat::getId()
  void Cat::wait()
  {
 	 // wait for the thread to terminate
+     //added by TJ
+     if (_catThread != NULL){
+        _catThread -> join();
+     }
  }
  
  
@@ -358,8 +372,8 @@ void Lizard::sago2MonkeyGrassIsSafe()
 		cout << "[" << _id << "] checking  sago -> monkey grass" << endl;
 		cout << flush;
     }
-
-	
+    //Added By Tj 
+	sem_wait(&dWaySemaphore);
 
 
 	if (debug)
@@ -388,7 +402,11 @@ void Lizard::crossSago2MonkeyGrass()
 	/*
 	 * One more crossing this way
 	 */
+    //Added by Tj needed to create countMutex for this mutex lock wrapper
+
+    pthread_mutex_lock(&countMutex);
 	numCrossingSago2MonkeyGrass++;
+    pthread_mutex_unlock(&countMutex);
 
 	/*
      * Check for lizards cross both ways
@@ -410,7 +428,12 @@ void Lizard::crossSago2MonkeyGrass()
     /*
      * That one seems to have made it
      */
+
+     /*Added by Tj just the mutex lock wrapper.*/
+    pthread_mutex_lock(&countMutex);
     numCrossingSago2MonkeyGrass--;
+    pthread_mutex_unlock(&countMutex);
+
 }
 
 
@@ -429,8 +452,8 @@ void Lizard::madeIt2MonkeyGrass()
 		cout << "[" << _id << "] made the  sago -> monkey grass  crossing" << endl;
 		cout << flush;
     }
-
-
+    //added by Tj 
+    sem_post(&dWaySemaphore);
 
 
 
@@ -482,8 +505,8 @@ void Lizard::monkeyGrass2SagoIsSafe()
 		cout << flush;
     }
 
-
-
+    //Added By Tj
+    sem_wait(&dWaySemaphore);
 
 
 	if (debug)
@@ -511,8 +534,12 @@ void Lizard::crossMonkeyGrass2Sago()
 
     /*
      * One more crossing this way
+     * Added by Tj 
      */
+    pthread_mutex_lock(&countMutex);
 	numCrossingMonkeyGrass2Sago++;
+    pthread_mutex_unlock(&countMutex);
+
 
   
     /*
@@ -533,8 +560,12 @@ void Lizard::crossMonkeyGrass2Sago()
 
 	/*
      * That one seems to have made it
+     * Added BY TJ Mutex lock wrapper  
      */
+    pthread_mutex_lock(&countMutex);
 	numCrossingMonkeyGrass2Sago--;
+    pthread_mutex_unlock(&countMutex);
+
 }
 
 
@@ -554,6 +585,9 @@ void Lizard::madeIt2Sago()
 		cout << "[" << _id << "] made the  monkey grass -> sago  crossing" << endl;
 		cout << flush;
     }
+    //Added By tj
+    sem_post(&dWaySemaphore);
+
 }
 
 /**
@@ -584,24 +618,14 @@ void Lizard::lizardThread(Lizard *aLizard)
        * some functions by filling in the code.  Some  
        * are already completed - see the comments.
        */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      //Added BY Tj
+      aLizard->sleepNow();
+      aLizard->sago2MonkeyGrassIsSafe();
+      aLizard->crossSago2MonkeyGrass();
+      aLizard->eat();
+      aLizard->monkeyGrass2SagoIsSafe();
+      aLizard->crossMonkeyGrass2Sago();
+      aLizard-> madeIt2Sago();
     }
 
 }
@@ -622,7 +646,8 @@ int main(int argc, char **argv)
 	/*
 	 * Declare local variables
      */
-
+    //Added BY TJ
+    vector<Cat*> allCats;
 
 
 
@@ -652,7 +677,9 @@ int main(int argc, char **argv)
 	/*
      * Initialize locks and/or semaphores
      */
-
+    //Added by TJ
+    sem_init(&dWaySemaphore, 0, MAX_LIZARD_CROSSING);
+    pthread_mutex_init(&countMutex, NULL);
 
 
 
@@ -668,6 +695,11 @@ int main(int argc, char **argv)
     /*
      * Create NUM_CATS cat threads
      */
+    //Added by Tj
+    for(int i=0; i <NUM_CATS; i++){
+        allCats.push_back(new Cat(i));
+    }
+
 	 
 
 	/*
@@ -676,7 +708,10 @@ int main(int argc, char **argv)
     for (int i=0; i < NUM_LIZARDS; i++) {
         allLizards[i]->run();
     }
-
+    //Added by TJ
+    for(int i=0; i<NUM_CATS; i++){
+        allCats[i]->run();
+    }
 	/*
      * Now let the world run for a while
      */
@@ -692,22 +727,31 @@ int main(int argc, char **argv)
     /*
      * Wait until all threads terminate
      */
-
-
-
-
-
-
+    //added By Tj
+    for (int i = 0; i < NUM_LIZARDS; i++){
+        allLizards[i]->wait();
+    }
+    for(int i = 0; i < NUM_CATS; i++){
+        allCats[i]->wait();
+    }
 	/*
      * Delete the locks and semaphores
      */
-	 
+	 //Added by Tj
+     sem_destroy(&dWaySemaphore);
+     pthread_mutex_destroy(&countMutex);
 	 
 	 
 	/*
 	 * Delete all cat and lizard objects
 	 */
- 
+    //Added by Tj
+    for(int i = 0; i < NUM_LIZARDS; i++){
+        delete allLizards[i];
+    }
+    for(int i = 0; i < NUM_CATS; i++){
+        delete allCats[i];
+    }
 
 
 
