@@ -1,0 +1,13 @@
+CXX = g++
+CXXFLAGS = -g -Wall - std=c++11 -pthread
+
+all: lizard oneWay
+
+lizard: lizard.cpp
+	$(CXX) $(CXXFLAGS) lizards.cpp -o lizard
+
+oneWay: oneWay.cpp
+	$(CXX) $(CXXFLAGS) oneWay.cpp -o oneWay
+
+clean: 
+	rm -f lizard oneWay
