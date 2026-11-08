@@ -37,6 +37,7 @@ struct DirectionGroup {
 sem_t dWaySemaphore;
 sem_t directionSemaphore;
 mutex countMutex;
+mutex outputMutex;
 DirectionGroup sago2MonkeyGrass;
 DirectionGroup monkeyGrass2Sago;
 
@@ -48,7 +49,11 @@ atomic<bool> running;
 
 void semaphoreError(const char *operation)
 {
-    cerr << operation << ": " << error_code(errno, generic_category()).message() << endl;
+    const int error = errno;
+    {
+        lock_guard<mutex> lock(outputMutex);
+        cerr << operation << ": " << error_code(error, generic_category()).message() << endl;
+    }
     abort();
 }
 
@@ -126,10 +131,12 @@ void Cat::sleepNow()
 {
     int seconds = randomSeconds(MAX_CAT_SLEEP);
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] cat sleeping for " << seconds << " seconds" << endl;
     }
     sleepSeconds(seconds);
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] cat awake" << endl;
     }
 }
@@ -137,6 +144,7 @@ void Cat::sleepNow()
 void Cat::catThread(Cat *aCat)
 {
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << aCat->getId() << "] cat is alive" << endl;
     }
 
@@ -144,7 +152,10 @@ void Cat::catThread(Cat *aCat)
         aCat->sleepNow();
         lock_guard<mutex> lock(countMutex);
         if (numCrossingSago2MonkeyGrass + numCrossingMonkeyGrass2Sago > MAX_LIZARD_CROSSING) {
-            cerr << "\tThe cats are happy - they have toys." << endl;
+            {
+                lock_guard<mutex> outputLock(outputMutex);
+                cerr << "\tThe cats are happy - they have toys." << endl;
+            }
             exit(EXIT_FAILURE);
         }
     }
@@ -175,10 +186,12 @@ void Lizard::sleepNow()
 {
     int seconds = randomSeconds(MAX_LIZARD_SLEEP);
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] sleeping for " << seconds << " seconds" << endl;
     }
     sleepSeconds(seconds);
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] awake" << endl;
     }
 }
@@ -186,6 +199,7 @@ void Lizard::sleepNow()
 void Lizard::sago2MonkeyGrassIsSafe()
 {
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] checking sago -> monkey grass" << endl;
     }
     enterDirection(sago2MonkeyGrass);
@@ -199,14 +213,21 @@ void Lizard::crossSago2MonkeyGrass()
         int total = numCrossingSago2MonkeyGrass + numCrossingMonkeyGrass2Sago;
         maximumCrossing = max(maximumCrossing, total);
         if (numCrossingMonkeyGrass2Sago && UNIDIRECTIONAL) {
-            cerr << "\tCrash! Lizards are crossing in both directions." << endl;
+            {
+                lock_guard<mutex> outputLock(outputMutex);
+                cerr << "\tCrash! Lizards are crossing in both directions." << endl;
+            }
             exit(EXIT_FAILURE);
         }
         if (total > MAX_LIZARD_CROSSING) {
-            cerr << "\tThe cats are happy - they have toys." << endl;
+            {
+                lock_guard<mutex> outputLock(outputMutex);
+                cerr << "\tThe cats are happy - they have toys." << endl;
+            }
             exit(EXIT_FAILURE);
         }
         if (debug) {
+            lock_guard<mutex> outputLock(outputMutex);
             cout << "[" << _id << "] crossing sago -> monkey grass; total=" << total << endl;
         }
     }
@@ -220,6 +241,7 @@ void Lizard::crossSago2MonkeyGrass()
 void Lizard::madeIt2MonkeyGrass()
 {
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] made the sago -> monkey grass crossing" << endl;
     }
     leaveDirection(sago2MonkeyGrass);
@@ -229,10 +251,12 @@ void Lizard::eat()
 {
     int seconds = randomSeconds(MAX_LIZARD_EAT);
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] eating for " << seconds << " seconds" << endl;
     }
     sleepSeconds(seconds);
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] finished eating" << endl;
     }
 }
@@ -240,6 +264,7 @@ void Lizard::eat()
 void Lizard::monkeyGrass2SagoIsSafe()
 {
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] checking monkey grass -> sago" << endl;
     }
     enterDirection(monkeyGrass2Sago);
@@ -253,14 +278,21 @@ void Lizard::crossMonkeyGrass2Sago()
         int total = numCrossingSago2MonkeyGrass + numCrossingMonkeyGrass2Sago;
         maximumCrossing = max(maximumCrossing, total);
         if (numCrossingSago2MonkeyGrass && UNIDIRECTIONAL) {
-            cerr << "\tCrash! Lizards are crossing in both directions." << endl;
+            {
+                lock_guard<mutex> outputLock(outputMutex);
+                cerr << "\tCrash! Lizards are crossing in both directions." << endl;
+            }
             exit(EXIT_FAILURE);
         }
         if (total > MAX_LIZARD_CROSSING) {
-            cerr << "\tThe cats are happy - they have toys." << endl;
+            {
+                lock_guard<mutex> outputLock(outputMutex);
+                cerr << "\tThe cats are happy - they have toys." << endl;
+            }
             exit(EXIT_FAILURE);
         }
         if (debug) {
+            lock_guard<mutex> outputLock(outputMutex);
             cout << "[" << _id << "] crossing monkey grass -> sago; total=" << total << endl;
         }
     }
@@ -274,6 +306,7 @@ void Lizard::crossMonkeyGrass2Sago()
 void Lizard::madeIt2Sago()
 {
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << _id << "] made the monkey grass -> sago crossing" << endl;
     }
     leaveDirection(monkeyGrass2Sago);
@@ -282,6 +315,7 @@ void Lizard::madeIt2Sago()
 void Lizard::lizardThread(Lizard *aLizard)
 {
     if (debug) {
+        lock_guard<mutex> lock(outputMutex);
         cout << "[" << aLizard->getId() << "] lizard is alive" << endl;
     }
 
