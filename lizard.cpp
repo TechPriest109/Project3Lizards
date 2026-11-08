@@ -56,7 +56,7 @@ using namespace std;
  * be simulated.  
  * Try 30 for development and 120 for more thorough testing.
  */
-#define WORLDEND             120
+#define WORLDEND           120
 
 /*
  * Number of lizard threads to create
@@ -97,6 +97,7 @@ using namespace std;
 /*
  * Declare global variables here
  * Added By Tj
+ * Semaphore to handle bidriectional travel countMutex to lock the critical section and shared variables
  */
 sem_t dWaySemaphore;
 pthread_mutex_t countMutex;
@@ -162,11 +163,11 @@ int Cat::getId()
  * Launches a cat thread.
  * 
  * Status: Incomplete - Make changes to this code.
- * Status Tj: Added line 167 may not be correct at this moment.
+ * Status Tj: Added line 170 : Launches the cat thread
  */
  void Cat::run() 
  {
-	 // launch the thread to simulate the cat's behavior
+	 // launch the thread to simulate the cat's behavior: copy of Lizard run
      _catThread = new thread (catThread, this); // Added by TJ
      
      
@@ -181,7 +182,7 @@ int Cat::getId()
  void Cat::wait()
  {
 	 // wait for the thread to terminate
-     //added by TJ
+     //added by TJ joins all threads waiting to terminate: copy of lizard wait
      if (_catThread != NULL){
         _catThread -> join();
      }
@@ -240,6 +241,7 @@ void Cat::catThread (Cat *aCat)
 	
 	if (debug)
     {
+        //Mutex lock wrapper for formatting added by TJ
         pthread_mutex_lock(&countMutex);
 		cout << "[" << aCat->getId() << "] cat is alive\n";
 		cout << flush;
@@ -387,7 +389,7 @@ void Lizard::sago2MonkeyGrassIsSafe()
 {
 	if (debug)
     {             
-        //Mutex Lock added by TJ  
+        //Mutex Lock added by TJ for formatting 
         pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] checking  sago -> monkey grass" << endl;
 		cout << flush;
@@ -419,7 +421,7 @@ void Lizard::sago2MonkeyGrassIsSafe()
 void Lizard::crossSago2MonkeyGrass()
 {
 	if (debug)
-    {//Added by TJ
+    {//Added by TJ Mutex lock wrapper to help with cout formatting
 
       pthread_mutex_lock(&countMutex);
       cout << "[" << _id << "] crossing  sago -> monkey grass" << endl;
@@ -430,8 +432,8 @@ void Lizard::crossSago2MonkeyGrass()
 	/*
 	 * One more crossing this way
 	 */
-    //Added by Tj needed to create countMutex for this mutex lock wrapper
 
+    //Added by Tj Mutex lock wrapper so only one thread increments numCrossing at a time.
     pthread_mutex_lock(&countMutex);
 	numCrossingSago2MonkeyGrass++;
     pthread_mutex_unlock(&countMutex);
@@ -476,7 +478,7 @@ void Lizard::madeIt2MonkeyGrass()
      * Whew, made it across
      */
 	if (debug)
-    {//Mutex Wrapper added By tj
+    {//Mutex Wrapper added By Tj.
         pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] made the  sago -> monkey grass  crossing" << endl;
 		cout << flush;
@@ -727,7 +729,7 @@ int main(int argc, char **argv)
 	/*
      * Initialize locks and/or semaphores
      */
-    //Added by TJ
+    //Added by TJ semaphore is initialized by max lizard crossing so if that zero no lizards ever cross
     sem_init(&dWaySemaphore, 0, MAX_LIZARD_CROSSING);
     pthread_mutex_init(&countMutex, NULL);
 

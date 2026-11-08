@@ -1,5 +1,5 @@
-#ifndef ONEWAY_HPP
-#define ONEWAY_HPP
+#ifndef lizardUni_HPP
+#define lizardUni_HPP
 
 #include <thread>
 
@@ -40,4 +40,4 @@ private:
     static void lizardThread(Lizard *aLizard);
 };
 
-#endif // ONEWAY_HPP
+#endif // LizardUni_HPP
