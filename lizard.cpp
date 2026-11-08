@@ -367,7 +367,7 @@ void Lizard::sleepNow()
       pthread_mutex_lock(&countMutex);
       cout << "[" << _id << "] awake" << endl;
       cout << flush;
-      pthread_mutex_lock(&countMutex);
+      pthread_mutex_unlock(&countMutex);
 
     }
 }
@@ -424,6 +424,7 @@ void Lizard::crossSago2MonkeyGrass()
       pthread_mutex_lock(&countMutex);
       cout << "[" << _id << "] crossing  sago -> monkey grass" << endl;
       cout << flush;
+      pthread_mutex_unlock(&countMutex);
     }
 
 	/*
