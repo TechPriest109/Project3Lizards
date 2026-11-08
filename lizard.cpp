@@ -629,7 +629,7 @@ void Lizard::madeIt2Sago()
         pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] made the  monkey grass -> sago  crossing" << endl;
 		cout << flush;
-        pthread_mutex_lock(&countMutex);
+        pthread_mutex_unlock(&countMutex);
     }
     //Added By tj
     sem_post(&dWaySemaphore);
@@ -670,6 +670,7 @@ void Lizard::lizardThread(Lizard *aLizard)
       aLizard->sleepNow();
       aLizard->sago2MonkeyGrassIsSafe();
       aLizard->crossSago2MonkeyGrass();
+      aLizard->madeIt2MonkeyGrass();
       aLizard->eat();
       aLizard->monkeyGrass2SagoIsSafe();
       aLizard->crossMonkeyGrass2Sago();
