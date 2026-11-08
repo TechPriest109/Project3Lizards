@@ -1,25 +1,43 @@
 #ifndef ONEWAY_HPP
 #define ONEWAY_HPP
 
-DECLARE a direction type:
-    SAGO_TO_GRASS
-    GRASS_TO_SAGO
+#include <thread>
 
-DECLARE shared synchronization:
-    capacity semaphore
-    direction semaphore
-    one group mutex for each direction
-    crossing-counter mutex
+class Cat {
+    int _id;
+    std::thread _catThread;
 
-DECLARE shared state:
-    number admitted to the sago-to-grass group
-    number admitted to the grass-to-sago group
+public:
+    explicit Cat(int id);
+    int getId();
+    void run();
+    void wait();
 
-DECLARE helper functions:
-    enterDirection(direction)
-    leaveDirection(direction)
+private:
+    void sleepNow();
+    static void catThread(Cat *aCat);
+};
 
-DECLARE Cat and Lizard classes:
-    retain the functions already used in lizard.cpp
+class Lizard {
+    int _id;
+    std::thread _aLizard;
 
-#endif // ONEWAY_HPP    
+public:
+    explicit Lizard(int id);
+    int getId();
+    void run();
+    void wait();
+
+private:
+    void sago2MonkeyGrassIsSafe();
+    void crossSago2MonkeyGrass();
+    void madeIt2MonkeyGrass();
+    void eat();
+    void monkeyGrass2SagoIsSafe();
+    void crossMonkeyGrass2Sago();
+    void madeIt2Sago();
+    void sleepNow();
+    static void lizardThread(Lizard *aLizard);
+};
+
+#endif // ONEWAY_HPP
