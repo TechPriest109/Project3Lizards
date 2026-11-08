@@ -204,16 +204,23 @@ void Cat::sleepNow()
 
 	if (debug)
     {
+        //added By Tj commit #7
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] cat sleeping for " << sleepSeconds << " seconds" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
+
     }
 
 	sleep( sleepSeconds );
 
 	if (debug)
     {
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] cat awake" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
+
     }
 }
 
@@ -233,8 +240,11 @@ void Cat::catThread (Cat *aCat)
 	
 	if (debug)
     {
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << aCat->getId() << "] cat is alive\n";
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
+
     }
 
 	while(running)
@@ -341,16 +351,24 @@ void Lizard::sleepNow()
 
 	if (debug)
     {
+        //Added by TJ
+      pthread_mutex_lock(&countMutex);
       cout << "[" << _id << "] sleeping for " << sleepSeconds << " seconds" << endl;
       cout << flush;
+      pthread_mutex_unlock(&countMutex);
+
     }
 
 	sleep( sleepSeconds );
 
 	if (debug)
     {
+        //Added by TJ
+      pthread_mutex_lock(&countMutex);
       cout << "[" << _id << "] awake" << endl;
       cout << flush;
+      pthread_mutex_lock(&countMutex);
+
     }
 }
 
@@ -368,18 +386,25 @@ void Lizard::sleepNow()
 void Lizard::sago2MonkeyGrassIsSafe()
 {
 	if (debug)
-    {
+    {             
+        //Mutex Lock added by TJ  
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] checking  sago -> monkey grass" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
+
     }
     //Added By Tj 
 	sem_wait(&dWaySemaphore);
 
 
 	if (debug)
-    {
+    { //Mutex wrapper added by TJ
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] thinks  sago -> monkey grass  is safe" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
+
     }
 }
 
@@ -394,7 +419,9 @@ void Lizard::sago2MonkeyGrassIsSafe()
 void Lizard::crossSago2MonkeyGrass()
 {
 	if (debug)
-    {
+    {//Added by TJ
+
+      pthread_mutex_lock(&countMutex);
       cout << "[" << _id << "] crossing  sago -> monkey grass" << endl;
       cout << flush;
     }
@@ -448,9 +475,12 @@ void Lizard::madeIt2MonkeyGrass()
      * Whew, made it across
      */
 	if (debug)
-    {
+    {//Mutex Wrapper added By tj
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] made the  sago -> monkey grass  crossing" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
+
     }
     //added by Tj 
     sem_post(&dWaySemaphore);
@@ -472,9 +502,12 @@ void Lizard::eat()
 	eatSeconds = 1 + (int)(random() / (double)RAND_MAX * MAX_LIZARD_EAT);
 
 	if (debug)
-    {
+    {                
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] eating for " << eatSeconds << " seconds" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
+
     }
 
 	/*
@@ -483,9 +516,12 @@ void Lizard::eat()
 	sleep( eatSeconds );
 
 	if (debug)
-    {
+    {//Added by Tj
+    pthread_mutex_lock(&countMutex);
       cout << "[" << _id << "] finished eating" << endl;
       cout << flush;
+    pthread_mutex_unlock(&countMutex);
+
     }
 }
 
@@ -500,9 +536,11 @@ void Lizard::eat()
 void Lizard::monkeyGrass2SagoIsSafe()
 {
 	if (debug)
-    {
+    {   //Added by Tj
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] checking  monkey grass -> sago" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
     }
 
     //Added By Tj
@@ -510,9 +548,11 @@ void Lizard::monkeyGrass2SagoIsSafe()
 
 
 	if (debug)
-    {
+    {   //added by TJ
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] thinks  monkey grass -> sago  is safe" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
     }
 }
 
@@ -528,8 +568,11 @@ void Lizard::crossMonkeyGrass2Sago()
 {
 	if (debug)
     {
+        //Added by Tj
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] crossing  monkey grass -> sago" << endl;
 		cout << flush;
+        pthread_mutex_unlock(&countMutex);
     }
 
     /*
@@ -582,8 +625,11 @@ void Lizard::madeIt2Sago()
      */
 	if (debug)
     {
+        //Added By Tj
+        pthread_mutex_lock(&countMutex);
 		cout << "[" << _id << "] made the  monkey grass -> sago  crossing" << endl;
 		cout << flush;
+        pthread_mutex_lock(&countMutex);
     }
     //Added By tj
     sem_post(&dWaySemaphore);
@@ -605,8 +651,10 @@ void Lizard::lizardThread(Lizard *aLizard)
 {	
 	if (debug)
     {
+      pthread_mutex_lock(&countMutex);
       cout << "[" << aLizard->getId() << "] lizard is alive" << endl;
       cout << flush;
+      pthread_mutex_unlock(&countMutex);
     }
 
 	while(running)
