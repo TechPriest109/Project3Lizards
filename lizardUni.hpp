@@ -1,11 +1,13 @@
 #ifndef lizardUni_HPP
 #define lizardUni_HPP
 
+using namespace std;
+
 #include <thread>
 
 class Cat {
     int _id;
-    std::thread _catThread;
+    thread _catThread;
 
 public:
     explicit Cat(int id);
@@ -20,7 +22,7 @@ private:
 
 class Lizard {
     int _id;
-    std::thread _aLizard;
+    thread _aLizard;
 
 public:
     explicit Lizard(int id);

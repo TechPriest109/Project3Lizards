@@ -28,7 +28,7 @@ using namespace std;
 #define MAX_LIZARD_EAT       5
 #define CROSS_SECONDS        2
 
-// Lizards in the same group may share the driveway; the other group waits.
+// Lizards in the same group may share the driveway as the other group waits
 struct DirectionGroup {
     mutex groupMutex;
     int admitted = 0;
@@ -47,6 +47,7 @@ int maximumCrossing;
 int debug;
 atomic<bool> running;
 
+// This was added for edge cases of unexpected semaphore errors.
 void semaphoreError(const char *operation)
 {
     const int error = errno;
@@ -73,6 +74,11 @@ void postSemaphore(sem_t *semaphore)
     }
 }
 
+/**
+ * For the direction group that is entering the driveway.
+ * If there are no lizards in the group, wait for the direction semaphore.
+ * Then wait for the driveway semaphore.
+ */
 void enterDirection(DirectionGroup& group)
 {
     {
@@ -85,6 +91,11 @@ void enterDirection(DirectionGroup& group)
     waitSemaphore(&dWaySemaphore);
 }
 
+/**
+ * For the direction group that is leaving the driveway.
+ * Post the driveway semaphore.
+ * If there are no more lizards in the group, post the direction semaphore.
+ */
 void leaveDirection(DirectionGroup& group)
 {
     postSemaphore(&dWaySemaphore);
@@ -94,6 +105,7 @@ void leaveDirection(DirectionGroup& group)
     }
 }
 
+// For determining a randomized number of seconds between 1 and a maximum value.
 int randomSeconds(int maximum)
 {
     thread_local mt19937 generator(random_device{}());
@@ -141,6 +153,7 @@ void Cat::sleepNow()
     }
 }
 
+// Simulating cat behavior via threads.
 void Cat::catThread(Cat *aCat)
 {
     if (debug) {
@@ -312,6 +325,7 @@ void Lizard::madeIt2Sago()
     leaveDirection(monkeyGrass2Sago);
 }
 
+// Simulating the lizard behavior via threads.
 void Lizard::lizardThread(Lizard *aLizard)
 {
     if (debug) {

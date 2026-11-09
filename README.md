@@ -10,3 +10,4 @@
 # Commit #9 Fixed OneWay debugging output.
 # Commit #10 Commenting and Report
 # Lizard.cpp Changes
+# LizardUni has been completed.

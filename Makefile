@@ -1,13 +1,13 @@
 CXX = g++
 CXXFLAGS = -g -Wall -std=c++11 -pthread
 
-all: lizard oneWay
+all: lizard lizardUni
 
 lizard: lizard.cpp
 	$(CXX) $(CXXFLAGS) lizard.cpp -o lizard
 
-oneWay: oneWay.cpp oneWay.hpp
-	$(CXX) $(CXXFLAGS) oneWay.cpp -o oneWay
+lizardUni: lizardUni.cpp lizardUni.hpp
+	$(CXX) $(CXXFLAGS) lizardUni.cpp -o lizardUni
 
 clean: 
-	rm -f lizard oneWay
+	rm -f lizard lizardUni
